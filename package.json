@@ -1,0 +1,27 @@
+{
+	"name": "cordova-plugin-dz-settingspage",
+	"version": "1.0.0",
+	"description": "Cordova Chrome.i18n Plugin - Compacted with Fixes",
+	"cordova": {
+		"id": "cordova-plugin-dz-i18n",
+		"platforms": [
+			"android",
+			"ios",
+			"browser"
+		]
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/danield/cordova-plugin-dz-i18n"
+	},
+	"keywords": [
+		"cordova",
+		"plugin",
+		"cordova-android",
+		"cordova-ios",
+		"cordova-browser",
+		"i18n",
+		"localization"
+	],
+	"license": "Apache-2.0"
+}

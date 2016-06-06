@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    id="cordova-plugin-dz-i18n"
+    version="1.0.0">
+	<name>i18n</name>
+	<description>Cordova Chrome.i18n Plugin - Compacted with Fixes</description>
+	<license>Apache 2.0</license>
+	<keywords>cordova,plugin,cordova-android,cordova-ios,cordova-browser,i18n,localization</keywords>
+
+	<engines>
+		<engine name="cordova" version=">=3.0.0" />
+	</engines>
+
+	<js-module src="www/i18n.js" name="i18n">
+		<clobbers target="dz.i18n" />
+	</js-module>
+</plugin>
