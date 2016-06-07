@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var exec = cordova.require('cordova/exec');
+var device = require('cordova-plugin-device.device');
 
 function stripComments(manifestData) {
 	// http://stackoverflow.com/questions/5989315/regex-for-match-replacing-javascript-comments-both-multiline-and-inline
@@ -15,9 +16,10 @@ exports.getManifest = function () {
 	if (typeof manifestJson == 'undefined') {
 		var xhr = new XMLHttpRequest();
 		// This is a bit fragile - determine path by whether chromeapp.html is in the URL.
-		var path = /chromeapp\.html$/.exec(location.href) ? '../../manifest.json' : 'manifest.json';
+		var path = _getFilePath('manifest.json');
 		xhr.open('GET', path, false);
 		xhr.send(null);
+		
 		if ((xhr.status === 0 || (xhr.status >= 200 && xhr.status < 300)) && xhr.responseText && xhr.responseText.length > 0) {
 			try {
 				// Manifest should always be comment-free when working with cca, since cca writes it in a build step.
@@ -72,7 +74,7 @@ function _endsWith(string, endString) {
 }
 
 function _getFilePathForLocale(locale) {
-	return '/_locales/' + locale.toLowerCase() + '/messages.json';
+	return '_locales/' + locale.toLowerCase() + '/messages.json';
 }
 
 function _toLowerCaseMessageAndPlaceholders(obj) {
@@ -101,23 +103,41 @@ function _getDefaultLocale() {
 	}
 }
 
+function _getFilePath(fileName) {
+	var filePath;
+	if (device.platform === "iOS") {
+		filePath = cordova.file.applicationDirectory + 'www/' + fileName;
+	} else if (device.platform === "Android") {
+		filePath = cordova.file.applicationDirectory + fileName;
+	} else {
+		var path = /index\.html$/.exec(location.href) ? '../../' + fileName : fileName;
+		filePath = path;
+	}
+	return filePath;
+}
+
 var memoizedJsonContents = {};
 function _getMessageFromMessageJson(messageName, localeChain) {
 	for (var i = 0; i < localeChain.length; i++) {
 		var locale = localeChain[i];
 		if (!memoizedJsonContents[locale]) {
 			var fileName = _getFilePathForLocale(locale);
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', fileName, false /* sync */);
-			xhr.send(null);
-			// Convert any \x escape sequences to \u two-byte sequences
-			var cleanedResponse = xhr.responseText.replace(/\\x([0-9a-f]{2})/g, '\\u00$1');
+			var filePath = _getFilePath(fileName);
+			
 			var contents;
 			try {
-				contents = JSON.parse(cleanedResponse);
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', filePath, false /* sync */);
+				xhr.send(null);
+				if (xhr.responseText && xhr.responseText.length > 0) {
+					// Convert any \x escape sequences to \u two-byte sequences
+					var cleanedResponse = xhr.responseText.replace(/\\x([0-9a-f]{2})/g, '\\u00$1');
+
+					contents = JSON.parse(cleanedResponse);
+				}
 			}
 			catch (error) {
-				throw new Error('Unable to parse file "' + fileName + '", error: ' + error);
+				//throw new Error('Unable to parse file "' + fileName + '", error: ' + error);
 			}
 			// convert all fields to lower case to check case insensitively
 			contents = _toLowerCaseMessageAndPlaceholders(contents);
@@ -133,11 +153,13 @@ var availableLocales = {};
 function _isLocaleAvailable(locale) {
 	if (!availableLocales.hasOwnProperty(locale)) {
 		var fileName = _getFilePathForLocale(locale);
-		var xhr = new XMLHttpRequest();
-		xhr.open('HEAD', fileName, false);
+		var filePath = _getFilePath(fileName);
+		
 		try {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', filePath, false);
 			xhr.send(null);
-			availableLocales[locale] = (xhr.status === 200 || xhr.status === 0);
+			availableLocales[locale] = ((xhr.status === 200 || xhr.status === 0) && xhr.responseText && xhr.responseText.length > 0);
 		} catch (e) {
 			// Safari throws for not found and sync.
 			availableLocales[locale] = false;
