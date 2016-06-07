@@ -74,7 +74,7 @@ function _endsWith(string, endString) {
 }
 
 function _getFilePathForLocale(locale) {
-	return '_locales/' + locale.toLowerCase() + '/messages.json';
+	return 'locales/' + locale.toLowerCase() + '/messages.json';
 }
 
 function _toLowerCaseMessageAndPlaceholders(obj) {
@@ -108,7 +108,7 @@ function _getFilePath(fileName) {
 	if (device.platform === "iOS") {
 		filePath = cordova.file.applicationDirectory + 'www/' + fileName;
 	} else if (device.platform === "Android") {
-		filePath = cordova.file.applicationDirectory + fileName;
+		filePath = cordova.file.applicationDirectory + 'www/' + fileName;
 	} else {
 		var path = /index\.html$/.exec(location.href) ? '../../' + fileName : fileName;
 		filePath = path;
